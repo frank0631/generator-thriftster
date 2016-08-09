@@ -1,0 +1,149 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url "http://dl.bintray.com/esistegalaber/maven/" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath 'co.tomlee.gradle.plugins:gradle-thrift-plugin:0.0.6'
+        classpath 'org.absolutegalaber:yeoman-gradle-plugin:0.3.0'
+        classpath 'com.google.guava:guava:+'
+    }
+}
+
+plugins {
+  id "com.eriwen.gradle.js" version "2.14.1"
+}
+apply plugin: 'thrift'
+
+
+@Grab( 'com.google.guava:guava:+' )
+import groovy.json.*
+import static com.google.common.base.CaseFormat.*
+String.metaClass.caseFormat = { from, to -> from.to(to, delegate) }
+
+task setProperties() {
+    project.ext {
+        projectNameJsCase = project.name.caseFormat(UPPER_CAMEL, LOWER_HYPHEN)
+        genJavaDir = new File(project.projectDir, 'build/generated-src/main/java')
+        genJsDir = new File(project.projectDir, 'build/generated-src/main/js')
+        srcThriftDir = new File(project.projectDir, 'src/main/thrift')
+        distDir = new File(project.projectDir, 'dist')
+        
+        combineThriftJS = new File(project.buildDir, projectNameJsCase + '.js')
+        bowerFile = new File(project.buildDir, "bower.json")
+        bowerName = projectNameJsCase
+        bowerVersion = '0.0.5'
+        bowerMain = combineThriftJS.getName()
+        bowerPrivate = true
+    }
+}
+
+dependencies {
+    compile 'org.apache.thrift:libthrift:0.9.2'
+    compile 'commons-lang:commons-lang:2.6'
+}
+
+generateThriftSource {
+    verbose false
+    debug false
+    strict true
+
+    path file('src/main/thrift')
+    executable '/usr/bin/thrift'
+
+    generators {
+        java {
+            option 'hashcode'
+            option 'beans'
+            out project.genJavaDir
+        }
+        js {
+            option 'jquery'
+            out project.genJsDir
+        }
+    }
+}
+
+
+javascript.source {
+    dev {
+        js {
+            srcDir project.genJsDir
+            include "*.js"
+            exclude "*.min.js"
+        }
+    }
+    prod {
+        js {
+            srcDir project.genJsDir
+            include "*.min.js"
+        }
+    }
+}
+
+combineJs {
+    source project.genJsDir
+    dest project.combineThriftJS
+}
+
+task bowerInit(dependsOn: combineJs) <<{
+    def json = JsonOutput.toJson([
+            name: project.bowerName,
+            version : project.bowerVersion,
+            main : project.bowerMain,
+            private : project.bowerPrivate,
+            ignore : [".jshintrc","**/*.txt"]
+    ])
+    project.bowerFile.text = JsonOutput.prettyPrint(json);
+}
+
+task zipThrift(type: Zip, dependsOn: generateThriftSource) {
+    archiveName 'thriftModels.zip'
+    from project.srcThriftDir
+    include '**/*.thrift'
+    destinationDir project.distDir
+}
+task zipJava(type: Zip, dependsOn: generateThriftSource) {
+    archiveName 'thriftJava.zip'
+    from project.genJavaDir
+    include '**/*.java'
+    destinationDir project.distDir
+}
+task zipJs(type: Zip, dependsOn: generateThriftSource) {
+    archiveName 'thriftJs.zip'
+    from project.genJsDir
+    include '**/*.js'
+    destinationDir project.distDir
+}
+task zipBower(type: Zip, dependsOn: ['generateThriftSource','bowerInit']) {
+    archiveName 'bower'+project.name+'.zip'
+    from project.buildDir
+    include project.bowerFile.getName(), project.combineThriftJS.getName()
+    destinationDir project.distDir
+}
+def zipCollection = [ zipThrift, zipJava, zipJs, zipBower ]
+task produceZips()
+
+task cleanThriftZip(type: Delete) {
+    delete project.distDir
+}
+
+task cleanThriftGen(type: Delete) {
+    delete project.genJavaDir
+    delete project.genJsDir
+}
+
+task cleanCombinedJs(type: Delete) {
+    delete project.combineThriftJS
+}
+
+produceZips.dependsOn(zipCollection)
+clean.finalizedBy(cleanThriftZip)
+clean.finalizedBy(cleanThriftGen)
+clean.finalizedBy(cleanCombinedJs)
+
+build.dependsOn(generateThriftSource)
+bowerInit.dependsOn(build)
+build.finalizedBy(zipCollection)
