@@ -1,0 +1,19 @@
+task setProperties() {
+    project.ext {
+        bowerName = thriftProjectName
+        generatedThriftSrcDirJs = file(bowerName)
+        generatedThriftJSSrcFile = new File(generatedThriftSrcDirJs, bowerName + '.js')
+    }
+}
+
+task getThriftJs << {
+    println 'copying thrift_bower_lib to ' + project.name
+    copy {
+        //TODO pass bower zip from project properties
+        File zipfile = new File(thriftProjectDistDir, 'thriftBower.zip')
+        File outputDir = generatedThriftSrcDirJs
+        from zipTree(zipfile)
+        into outputDir
+    }
+}
+getThriftJs.dependsOn(thriftProjectProduceTask)

@@ -5,7 +5,6 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
-        classpath("de.gesellix:gradle-docker-plugin:+")
     }
 }
 

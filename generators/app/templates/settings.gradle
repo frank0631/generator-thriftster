@@ -1,0 +1,5 @@
+rootProject.name = 'Hraesvelgr'
+
+include '<%=t_project%>'
+// include 'Ratatoskr'
+include '<%=s_project%>'

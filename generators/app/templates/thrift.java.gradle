@@ -1,0 +1,32 @@
+task setProperties() {
+    project.ext {
+        generatedThriftSrcDirJava = new File(project.projectDir, 'gen/main/java')
+    }
+}
+
+task getThriftJava << {
+    println 'copying thrift java src to ' + project.name
+    copy {
+        File zipfile = new File(thriftProjectDistDir, 'thriftJava.zip')
+        File outputDir = project.generatedThriftSrcDirJava
+        from zipTree(zipfile)
+        into outputDir
+    }
+}
+
+task addThriftToSrc << {
+    if (!project.generatedThriftSrcDirJava.exists())
+        (project.generatedThriftSrcDirJava.mkdirs())
+
+    println 'adding generated thrift ' + relativePath(project.generatedThriftSrcDirJava) + ' to ' + project.name
+    sourceSets.main.java {
+        srcDir relativePath(project.generatedThriftSrcDirJava)
+    }
+}
+
+//adding build dependcies
+getThriftJava.dependsOn(thriftProjectProduceTask)
+addThriftToSrc.dependsOn(getThriftJava)
+build.dependsOn(getThriftJava)
+build.dependsOn(addThriftToSrc)
+compileJava.dependsOn(addThriftToSrc)

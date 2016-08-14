@@ -23,21 +23,19 @@ import groovy.json.*
 import static com.google.common.base.CaseFormat.*
 String.metaClass.caseFormat = { from, to -> from.to(to, delegate) }
 
-task setProperties() {
-    project.ext {
-        projectNameJsCase = project.name.caseFormat(UPPER_CAMEL, LOWER_HYPHEN)
-        genJavaDir = new File(project.projectDir, 'build/generated-src/main/java')
-        genJsDir = new File(project.projectDir, 'build/generated-src/main/js')
-        srcThriftDir = new File(project.projectDir, 'src/main/thrift')
-        distDir = new File(project.projectDir, 'dist')
-        
-        combineThriftJS = new File(project.buildDir, projectNameJsCase + '.js')
-        bowerFile = new File(project.buildDir, "bower.json")
-        bowerName = projectNameJsCase
-        bowerVersion = '0.0.5'
-        bowerMain = combineThriftJS.getName()
-        bowerPrivate = true
-    }
+project.ext {
+    projectNameJsCase = project.name.caseFormat(UPPER_CAMEL, LOWER_HYPHEN)
+    genJavaDir = new File(project.projectDir, 'build/generated-src/main/java')
+    genJsDir = new File(project.projectDir, 'build/generated-src/main/js')
+    srcThriftDir = new File(project.projectDir, 'src/main/thrift')
+    distDir = new File(project.projectDir, 'dist')
+    
+    combineThriftJS = new File(project.buildDir, projectNameJsCase + '.js')
+    bowerFile = new File(project.buildDir, "bower.json")
+    bowerName = projectNameJsCase
+    bowerVersion = '0.0.5'
+    bowerMain = combineThriftJS.getName()
+    bowerPrivate = true
 }
 
 dependencies {
@@ -118,13 +116,12 @@ task zipJs(type: Zip, dependsOn: generateThriftSource) {
     destinationDir project.distDir
 }
 task zipBower(type: Zip, dependsOn: ['generateThriftSource','bowerInit']) {
-    archiveName 'bower'+project.name+'.zip'
+    archiveName 'thriftBower.zip'
     from project.buildDir
     include project.bowerFile.getName(), project.combineThriftJS.getName()
     destinationDir project.distDir
 }
 def zipCollection = [ zipThrift, zipJava, zipJs, zipBower ]
-task produceZips()
 
 task cleanThriftZip(type: Delete) {
     delete project.distDir

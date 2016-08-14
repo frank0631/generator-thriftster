@@ -1,0 +1,42 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url "http://dl.bintray.com/esistegalaber/maven/" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+Project thriftProject = project(':<%=t_project%>'){
+    apply from: '../thrift.src.gradle'
+}
+
+configure(subprojects - thriftProject) {
+    ext {
+      thriftProjectProduceTask = thriftProject.produceZips
+      thriftProjectDistDir = thriftProject.distDir
+      thriftProjectName = thriftProject.projectNameJsCase
+    }
+    dependencies {
+        thriftProject
+    }
+}
+
+project(':<%=s_project%>'){
+    apply plugin: 'java'
+    apply from: '../thrift.java.gradle'
+}
+
+// project(':Ratatoskr') {
+//     apply plugin: 'idea'
+//     apply from: '../thrift.js.gradle'
+    
+//     // required
+//     // yo, bower, git, grunt-cli, ruby, Sass
+//     // angular-fullstack, angular-thrift-service
+//     // use yo angular-fullstack appname
+// }

@@ -18,7 +18,7 @@ module.exports = yeoman.Base.extend({
     var NidhoggGenerator = this
     var prompts = [];
 
-    if (!NidhoggGenerator.options.t_namespace) {
+    if (!NidhoggGenerator.options.nidhogg) {
       prompts.push({
         type: 'object',
         name: 'nidhogg',
@@ -42,14 +42,14 @@ module.exports = yeoman.Base.extend({
   },
 
   createObjects: function() {
-    var thriftObjs = this.options.t_objects
     var NidhoggGenerator = this
+    var thriftObjs = NidhoggGenerator.options.nidhogg.t_objects
 
     _(thriftObjs).forEach(function(objs) {
     //TODO validate thrift object option
       var opts = {
-        t_namespace: NidhoggGenerator.options.t_namespace,
-        t_project: NidhoggGenerator.options.t_project,
+        t_namespace: NidhoggGenerator.options.nidhogg.t_namespace,
+        t_project: NidhoggGenerator.options.nidhogg.t_project,
         t_object: objs.t_object,
         t_path: objs.t_path
       }
@@ -62,8 +62,8 @@ module.exports = yeoman.Base.extend({
 
   writing: function() {
     var thriftOptions = {
-      t_namespace: this.options.t_namespace,
-      t_project: this.options.t_project
+      t_namespace: this.options.nidhogg.t_namespace,
+      t_project: this.options.nidhogg.t_project
     }
     var destinationPathBuild = sprintf("%(t_project)s/build.gradle", thriftOptions)
     var templatePathGradle = this.templatePath('build.gradle')

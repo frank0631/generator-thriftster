@@ -1,0 +1,30 @@
+@Grab('com.google.guava:guava:16.0.1')
+import static com.google.common.base.CaseFormat.*
+import de.gesellix.gradle.docker.tasks.*
+
+//Util for changing cases
+String.metaClass.caseFormat = { from, to ->
+    from.to(to, delegate)
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.guava:guava:16.0.1'
+    }
+}
+
+    task setProperties() {
+        project.ext {
+            projectNameJsCase = project.name.caseFormat(UPPER_CAMEL, LOWER_HYPHEN)
+            genJavaDir = new File(project.projectDir, 'build/generated-src/main/java')
+            genJsDir = new File(project.projectDir, 'build/generated-src/main/js')
+            srcThriftDir = new File(project.projectDir, 'src/main/thrift')
+            distDir = new File(project.projectDir, 'dist')
+        }
+
+    }
+
+    task produceZips()
