@@ -2,7 +2,6 @@
 var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 var yosay = require('yosay');
-var fs = require('fs');
 var _ = require('lodash');
 var sprintf = require("sprintf-js").sprintf
 
@@ -88,7 +87,7 @@ module.exports = yeoman.Base.extend({
 
   writing: function() {
 
-    var entityOptions = {
+    this.entityOptions = {
       s_namespace: this.options.s_namespace,
       s_project: this.options.s_project,
       s_object: this.options.s_object,
@@ -98,9 +97,37 @@ module.exports = yeoman.Base.extend({
       t_object: this.options.t_object
     }
 
-    var destPathEntity = sprintf("%(s_project)s/src/main/java/%(s_srcpath)s/%(s_project)s/%(t_object)s/%(s_object)sEntity.java", entityOptions)
+    var destPathEntity = sprintf("%(s_project)s/src/main/java/%(s_srcpath)s/%(s_project)s/%(t_object)s/%(s_object)sEntity.java", this.entityOptions)
     var templatePathEntity = this.templatePath('ThriftEntity.java')
-    this.fs.copyTpl(templatePathEntity, destPathEntity, entityOptions);
-  },
+    this.fs.copyTpl(templatePathEntity, destPathEntity, this.entityOptions);
+
+    //Import for RestConfiguration
+    var hook = '#===== yeoman hook import Entity =====#',
+      destPath = sprintf("%(s_project)s/src/main/java/%(s_srcpath)s/%(s_project)s/RestConfiguration.java", this.entityOptions),
+      file = this.fs.read(destPath),
+      insert = sprintf("import %(s_namespace)s.%(s_project)s.%(t_object)s.%(s_object)s;", this.entityOptions);
+    if (file.indexOf(insert) === -1) {
+      this.write(destPath, file.replace(hook, hook + '\n' + insert));
+    }
+    
+    //ExposrIdsFor for RestConfiguration
+    var hook = '#===== yeoman hook exposeIdsFor =====#',
+      destPath = sprintf("%(s_project)s/src/main/java/%(s_srcpath)s/%(s_project)s/RestConfiguration.java", this.entityOptions),
+      file = this.fs.read(destPath),
+      insert = sprintf("\t\tconfig.exposeIdsFor(%(s_object)sEntity.class);", this.entityOptions);
+    if (file.indexOf(insert) === -1) {
+      this.write(destPath, file.replace(hook, hook + '\n' + insert));
+    }
+    
+    //mapped-superclass for orm.xml
+    var hook = '<!--#===== yeoman hook mapped-superclass =====#-->',
+      destPath = sprintf("%(s_project)s/src/main/resources/META-INF/orm.xml", this.entityOptions)
+      file = this.fs.read(destPath),
+      insert = sprintf("\t<mapped-superclass class=\"%(s_namespace)s.%(s_project)s.%(t_object)s.%(s_object)s\"/>", this.entityOptions);
+    if (file.indexOf(insert) === -1) {
+      this.write(destPath, file.replace(hook, hook + '\n' + insert));
+    }
+    
+  }
 
 });
