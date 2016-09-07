@@ -29,11 +29,13 @@ module.exports = yeoman.Base.extend({
           "s_namespace": "com.frank0631",
           "s_project": "Huginn",
           "s_application": "HuginnApp",
-          "s_entities": []
+          "s_entities": [],
+          "s_repositories": [],
+          "s_services": []
         }
       })
     }
-    
+
     if (!HuginnGenerator.options.t_namespace) {
       prompts.push({
         type: 'input',
@@ -64,23 +66,43 @@ module.exports = yeoman.Base.extend({
 
   createObjects: function() {
     var HuginnGenerator = this
-    var sprintEntities = this.options.huginn.s_entities
-
-    _(sprintEntities).forEach(function(objs) {
-      //TODO validate spring entity option
-      var opts = {
+    var springEntities = this.options.huginn.s_entities
+    var springRepositories = this.options.huginn.s_repositories
+    var springServices = this.options.huginn.s_services
+    
+    var opts = {
         s_namespace: HuginnGenerator.options.huginn.s_namespace,
         s_project: HuginnGenerator.options.huginn.s_project,
         t_namespace: HuginnGenerator.options.t_namespace,
-        t_project: HuginnGenerator.options.t_project,
-        s_object: objs.s_object,
-        t_object: objs.t_object
-      }
+        t_project: HuginnGenerator.options.t_project
+    }
 
+    _(springEntities).forEach(function(objs) {
+      //TODO validate spring entity option
+      opts.s_object = objs.s_object
+      opts.t_object = objs.t_object
+      
       HuginnGenerator.composeWith('thriftster:huginn-entity', {
         options: opts
       });
+
+      HuginnGenerator.composeWith('thriftster:huginn-repository', {
+        options: opts
+      });
     });
+    
+    _(springServices).forEach(function(objs) {
+      //TODO validate spring entity option
+      opts.t_service = objs.t_service
+      opts.t_package = objs.t_package
+      opts.s_service = objs.s_service
+      opts.s_package = objs.s_package
+
+      HuginnGenerator.composeWith('thriftster:huginn-service', {
+        options: opts
+      });
+    });
+
   },
 
   writing: function() {

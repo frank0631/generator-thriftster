@@ -1,0 +1,25 @@
+apply plugin: 'application'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+mainClassName = "<%=j_namespace%>.<%=j_project%>.<%=j_application%>"
+
+
+dependencies {
+    compile('org.apache.thrift:libthrift:0.9.2'){
+        exclude group: 'org.slf4j'
+    }
+    compile 'org.slf4j:slf4j-simple:1.6.1'
+    compile 'commons-lang:commons-lang:2.6'
+    compile 'org.glassfish.jersey.core:jersey-client:2.13'
+
+    //testCompile("junit:junit")
+}

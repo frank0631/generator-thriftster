@@ -31,6 +31,11 @@ project(':<%=s_project%>'){
     apply from: '../thrift.java.gradle'
 }
 
+project(':<%=j_project%>'){
+    apply plugin: 'java'
+    apply from: '../thrift.java.gradle'
+}
+
 // project(':Ratatoskr') {
 //     apply plugin: 'idea'
 //     apply from: '../thrift.js.gradle'

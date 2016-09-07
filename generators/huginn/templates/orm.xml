@@ -6,6 +6,5 @@
                  version="2.0">
     <!--#===== yeoman hook mapped-superclass =====#-->
     <!--<mapped-superclass class="com.frank0631.nidhog.customer.Customer"/>-->
-    </mapped-superclass>
 
 </entity-mappings>

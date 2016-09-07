@@ -11,6 +11,7 @@ module.exports = yeoman.Base.extend({
     yeoman.Base.apply(this, arguments);
     this.option('t_project');
     this.option('s_project');
+    this.option('j_project');
   },
 
   initializing: function() {
@@ -38,6 +39,13 @@ module.exports = yeoman.Base.extend({
         t_project: nidhogg.t_project
       }
     });
+    
+    this.options["j_project"] = muninn.j_project
+    ThrifsterGenerator.composeWith('thriftster:muninn', {
+      options: {
+        muninn: thriftster.muninn
+      }
+    });
 
     // console.log("nidhogg", nidhogg);
     // console.log("huginn", huginn);
@@ -50,7 +58,8 @@ module.exports = yeoman.Base.extend({
   writing: function() {
     var hraesvelgrOptions = {
       t_project: this.options.t_project,
-      s_project: this.options.s_project
+      s_project: this.options.s_project,
+      j_project: this.options.j_project
     }
     
     this.fs.copyTpl(this.templatePath('build.gradle'), this.destinationPath('build.gradle'), hraesvelgrOptions)
